@@ -65,7 +65,7 @@ func (o *OrderStorage) Select(ctx context.Context, orderID int) (model.Order, er
 	}
 
 	var dbItems []dbItem
-	err = tx.SelectContext(ctx, &dbItems, "SELECT i.id, i.name, i.main_shelf_id FROM items i INNER JOIN orders_items oi ON i.id = oi.item_id WHERE oi.order_id = $1", dbOrder.ID)
+	err = tx.SelectContext(ctx, &dbItems, "SELECT i.id, i.name, i.main_shelf_id, oi.quantity FROM items i INNER JOIN orders_items oi ON i.id = oi.item_id WHERE oi.order_id = $1", dbOrder.ID)
 	if err != nil {
 		return model.Order{}, err
 	}
@@ -79,6 +79,7 @@ func (o *OrderStorage) Select(ctx context.Context, orderID int) (model.Order, er
 		item.ID = dbItem.ID
 		item.Name = dbItem.Name
 		item.MainShelfID = dbItem.MainShelfID
+		item.Quantity = dbItem.Quantity
 
 		var dbShelves []dbShelf
 		err = tx.SelectContext(ctx, &dbShelves, `SELECT s.id, s.name FROM shelves s INNER JOIN items_shelves "is" ON s.id = "is".shelf_id WHERE "is".item_id = $1`, dbItem.ID)
